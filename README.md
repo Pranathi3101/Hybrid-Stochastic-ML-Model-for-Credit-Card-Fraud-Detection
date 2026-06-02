@@ -1,97 +1,229 @@
-# Hybrid Stochastic-Discriminative Model for Credit Card Fraud Detection
+# Hybrid Sequential ML Model for Credit Card Fraud Detection
 
+A hybrid machine learning pipeline for detecting fraudulent credit card transactions using **Gaussian Hidden Markov Models (HMMs)**, **Random Forest**, and **XGBoost** on highly imbalanced financial transaction data.
 
+This project combines:
+- Sequential behavioral modeling using HMMs
+- Ensemble machine learning classifiers
+- Advanced feature engineering
+- Threshold optimization
+- Business-impact evaluation for fraud-risk tradeoffs
 
-## Overview
-This repository implements a hybrid approach to credit card fraud detection that combines a **Hidden Markov Model (HMM)** for sequential (stochastic) feature generation with a **Random Forest (RF)** classifier to detect rare, non-linear anomalies in transactional data. The HMM models normal spending sequences and produces a log-likelihood anomaly score which is used as an additional feature for the discriminative RF classifier.
+---
 
-**Key highlights**
-- Addresses extreme class imbalance (fraud < 0.2% of transactions).  
-- Models sequential user behavior with a Gaussian HMM.  
-- Uses Random Oversampling to balance training data and Random Forest for classification.  
-- Achieves strong cross-validated performance (5-fold CV F1 ≈ 0.996, AUC ≈ 0.998).
+# Problem Statement
+
+Credit card fraud detection is a highly imbalanced classification problem where fraudulent transactions constitute only a tiny fraction of total transactions.
+
+Traditional ML models often struggle to:
+- capture sequential behavioral patterns,
+- handle extreme class imbalance,
+- optimize business tradeoffs between fraud loss and false declines.
+
+This project addresses these issues by integrating:
+1. **Gaussian Hidden Markov Models (HMMs)** for transaction sequence modeling
+2. **Tree-based ensemble classifiers** for high-performance tabular fraud classification
+
+---
+
+# Key Features
+
+## Sequential Behavioral Modeling
+- Trained Gaussian Hidden Markov Models on cardholder transaction sequences
+- Modeled hidden behavioral states of users
+- Generated HMM likelihood scores as additional fraud-risk features
+
+## Ensemble ML Models
+Implemented and compared:
+- Random Forest
+- XGBoost
+- HMM-Augmented Hybrid Models
+
+## Feature Engineering
+Engineered:
+- Temporal transaction features
+- Behavioral spending features
+- Geospatial distance features
+- Cardholder activity patterns
+
+## Imbalance Handling
+- Fraud rate ≈ 0.579%
+- Class imbalance ratio ≈ 172:1
+- Stratified splitting and threshold optimization applied
+
+## Evaluation Pipeline
+Evaluated models using:
+- ROC-AUC
+- PR-AUC
+- F1 Score
+- Precision / Recall
+- Confusion Matrices
+- Business-impact analysis
+
+---
+
+# Dataset
+
+## Source
+Kaggle Credit Card Fraud Detection Dataset
+
+## Dataset Statistics
+- ~1.29 million transaction records
+- 23 transaction and behavioral features
+- Fraud rate: ~0.579%
+- Highly imbalanced binary classification problem
+
+---
+
+# Tech Stack
+
+- Python
+- Pandas
+- NumPy
+- Scikit-learn
+- XGBoost
+- hmmlearn
+- Matplotlib
+- Seaborn
+
+---
+
+# Project Workflow
+
+```text
+Raw Transaction Data
+        ↓
+Data Cleaning & Preprocessing
+        ↓
+Feature Engineering
+        ↓
+Train-Test Split
+        ↓
+Gaussian HMM Training
+        ↓
+Generate HMM Sequence Scores
+        ↓
+Random Forest / XGBoost Training
+        ↓
+Threshold Optimization
+        ↓
+Evaluation & Business Impact Analysis
+```
+
+---
+
+# Hidden Markov Model (HMM) Integration
+
+The project uses Gaussian HMMs to model sequential transaction behavior.
+
+For each cardholder:
+- transactions are treated as sequences,
+- hidden behavioral states are learned,
+- sequence likelihood scores are generated,
+- scores are appended as additional ML features.
+
+This enables the model to capture:
+- abnormal transaction behavior,
+- deviations from normal spending patterns,
+- temporal dependencies.
+
+---
+
+# Models Implemented
+
+| Model | Description |
+|---|---|
+| Random Forest Baseline | Standard RF classifier |
+| Random Forest + HMM | RF augmented with HMM sequence scores |
+| XGBoost Baseline | Gradient boosting fraud classifier |
+| XGBoost + HMM | Hybrid sequential fraud detection model |
+
+---
+
+# Results
+
+| Model | ROC-AUC |
+|---|---|
+| Random Forest Baseline | 0.9921 |
+| Random Forest + HMM | 0.9912 |
+| XGBoost Baseline | 0.9986 |
+| XGBoost + HMM | 0.9986 |
+
+## Best F1 Score
+- F1 Score ≈ 0.876 after threshold optimization
+
+---
+
+# Business Impact Evaluation
+
+Beyond traditional ML metrics, the project evaluates:
+- fraud-loss reduction,
+- false-decline costs,
+- operational tradeoffs.
+
+This simulates real-world financial fraud detection systems where:
+- overly aggressive fraud blocking hurts customer experience,
+- overly relaxed detection increases fraud losses.
+
+---
+
+# Visualizations Included
+
+- Fraud distribution analysis
+- Temporal fraud trends
+- Correlation heatmaps
+- Confusion matrices
+- ROC curves
+- Precision-Recall curves
+- Feature importance plots
 
 ---
 
 
 
-## Project Structure
-
-<pre>
-.
-├── creditcard_fraud_detection.ipynb     # Main Jupyter notebook (full pipeline)
-├── data/                                # (not included) Place creditcard.csv here
-├── requirements.txt                     # Python dependencies (optional)
-└── README.md
-</pre>
-
-
-
-
-
 ---
 
-## Technology Stack
-- **Python** (3.8+)  
-- **pandas**, **NumPy** (data processing)  
-- **scikit-learn** (Random Forest, metrics, CV)  
-- **hmmlearn** (GaussianHMM for stochastic modeling)  
-- **imbalanced-learn** (RandomOversampler)  
-- **matplotlib**, **seaborn** (visualizations)
+# Installation
 
----
+Clone the repository:
 
-## Methodology
-
-### Stage 1 — Stochastic Feature Engineering (HMM)
-- Train a `GaussianHMM` on **normal (non-fraud)** transactions only to learn typical sequential behavior.  
-- Compute the **Log-Likelihood Score** `HMM_LogLikelihood = log P(O | HMM)` for each transaction (or sequence window).  
-- Lower (more negative) log-likelihood values indicate anomalous sequences and serve as a stochastic risk metric.
-
-### Stage 2 — Discriminative Classification (Random Forest)
-- Append `HMM_LogLikelihood` to the original feature set to form the hybrid feature matrix.  
-- Handle class imbalance by **Random Oversampling** the minority class to a balanced training set.  
-- Train a `RandomForestClassifier` on the hybrid features.  
-- Evaluate using cross-validation and a held-out test set.
-
----
-
-## Results (Representative)
-**Cross-Validation (5-fold)**  
-- Average F1-Score: **0.996**
-
-**Test Set Metrics**
-| Class      | Precision | Recall | F1-Score |
-|------------|----------:|-------:|---------:|
-| Non-Fraud (0) | 0.99     | 1.00   | 0.99    |
-| Fraud (1)     | 1.00     | 0.99   | 0.99    |
-
-**Feature Importance (Top 4)**
-| Rank | Feature           | Importance |
-|-----:|-------------------|----------:|
-| 1    | V14               | 0.2099    |
-| 2    | V10               | 0.1155    |
-| 3    | HMM_LogLikelihood | 0.1011    |
-| 4    | V4                | 0.0972    |
-
-> The HMM log-likelihood ranks highly, confirming that stochastic sequential features provide unique predictive power.
-
----
-
-## Setup & Usage
-
-1. Clone this repository:
 ```bash
-git clone https://github.com/<your-username>/Hybrid-Stochastic-ML.git
-cd Hybrid-Stochastic-ML
+git clone [https://github.com/yourusername/hybrid-fraud-detection-ml.git](https://github.com/Pranathi3101/Hybrid-Stochastic-ML-Model-for-Credit-Card-Fraud-Detection.git)
+```
 
-2. Install dependencies (recommended: virtualenv / conda):
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
-# or
-pip install pandas numpy scikit-learn imbalanced-learn hmmlearn matplotlib seaborn
+```
 
-3. Download the Kaggle Credit Card Fraud dataset (creditcard.csv) and place it in ./data/.
+---
 
-4. Open and run the main notebook:
+# Running the Project
 
-creditcard_fraud_detection.ipynb — runs the full pipeline (data load → HMM feature generation → oversampling → RF training → evaluation).
+Open the notebook:
+
+```bash
+jupyter notebook
+```
+
+Run:
+
+```text
+notebook.ipynb
+```
+
+---
+
+# Future Improvements
+
+- Graph Neural Networks (GNNs)
+- Real-time streaming fraud detection
+- Transformer-based sequence modeling
+- Autoencoder anomaly detection
+- Online learning for evolving fraud patterns
+
+---
+
+
+
